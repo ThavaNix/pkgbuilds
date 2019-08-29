@@ -1,0 +1,65 @@
+#https://github.com/calamares/calamares/releases
+#https://gitlab.manjaro.org/packages/extra/calamares/raw/master/PKGBUILD
+
+# Maintainer: Philip Müller <philm[at]manjaro[dog]org>
+
+pkgname=calamares
+_pkgname=calamares
+pkgver=3.2.10
+pkgrel=3
+pkgdesc='Distribution-independent installer framework'
+arch=('i686' 'x86_64')
+license=(GPL)
+conflicts=('calamares-dev' 'calamares-git')
+url="https://github.com/calamares/calamares/releases"
+license=('LGPL')
+depends=('kconfig' 'kcoreaddons' 'kiconthemes' 'ki18n' 'kio' 'solid' 'yaml-cpp' 'kpmcore>=4.0.0' 'mkinitcpio-openswap'
+         'boost-libs' 'ckbcomp' 'hwinfo' 'qt5-svg' 'polkit-qt5' 'gtk-update-icon-cache' 'pythonqt>=3.2' 'plasma-framework'
+         'qt5-xmlpatterns')
+makedepends=('extra-cmake-modules' 'qt5-tools' 'qt5-translations' 'git' 'boost')
+backup=('usr/share/calamares/modules/bootloader.conf'
+        'usr/share/calamares/modules/displaymanager.conf'
+        'usr/share/calamares/modules/initcpio.conf'
+        'usr/share/calamares/modules/unpackfs.conf')
+source=("$_pkgname-$pkgver::$url/download/v$pkgver/$_pkgname-$pkgver.tar.gz")
+sha256sums=(SKIP)
+
+prepare() {
+  #settings for ArcoLinux
+  #cp "../initcpio-arcolinux/"* "$srcdir/${_pkgname}-${pkgver}/src/modules/initcpio"
+
+  sed -i -e 's/"Install configuration files" OFF/"Install configuration files" ON/' "$srcdir/${_pkgname}-${pkgver}/CMakeLists.txt"
+
+  # add pkgrelease to patch-version
+	cd ${_pkgname}-${pkgver}
+	_patchver="$(cat CMakeLists.txt | grep -m3 -e CALAMARES_VERSION_PATCH | grep -o "[[:digit:]]*" | xargs)"
+	sed -i -e "s|CALAMARES_VERSION_PATCH $_patchver|CALAMARES_VERSION_PATCH $_patchver-$pkgrel|g" CMakeLists.txt
+}
+
+build() {
+	cd $_pkgname-$pkgver
+
+	mkdir -p build
+	cd build
+	cmake .. \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_INSTALL_PREFIX=/usr \
+	-DCMAKE_INSTALL_LIBDIR=lib \
+	-DWITH_PYTHONQT:BOOL=ON \
+	-DWEBVIEW_FORCE_WEBKIT=ON \
+	-DSKIP_MODULES="interactiveterminal initramfs \
+	initramfscfg dracut dracutlukscfg \
+	dummyprocess dummypython dummycpp \
+	dummypythonqt services-openrc"
+  make
+}
+
+package() {
+	cd ${_pkgname}-${pkgver}/build
+	make DESTDIR="$pkgdir" install
+
+	# rename services-systemd back to services
+	mv "$pkgdir/usr/lib/calamares/modules/services-systemd" "$pkgdir/usr/lib/calamares/modules/services"
+	sed -i -e 's/-systemd//' "$pkgdir/usr/lib/calamares/modules/services/module.desc"
+	rm "$pkgdir/usr/share/applications/calamares.desktop"
+}
