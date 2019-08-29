@@ -1,0 +1,28 @@
+# Arch Net install
+pkgname=arch-iso-settings
+_pkgname=arch-iso-settings
+_destname1="/etc/xdg/autostart"
+_destname2="/usr/share/applications"
+_licensedir="/usr/share/arcolinux/licenses/"
+pkgver=19.09
+pkgrel=6
+pkgdesc="Installation files for ArcoLinux"
+arch=('any')
+url="https://github.com/Thavanix/arch-iso-settings"
+license=('GPL3')
+makedepends=('git')
+depends=()
+provides=("${pkgname}")
+options=(!strip !emptydirs)
+source=(${pkgname}::"git+https://github.com/arcolinux/${_pkgname}")
+sha256sums=('SKIP')
+package() {
+  install -dm755 "$pkgdir/$_licensedir/$_pkgname"
+  install -m644 "$srcdir/$pkgname/LICENSE" "$pkgdir/$_licensedir/$_pkgname"
+
+  install -dm755 "$pkgdir$_destname1"
+  cp -r "$srcdir/$pkgname/$_destname1/"* "$pkgdir$_destname1"
+
+  install -dm755 "$pkgdir$_destname2"
+  cp -r "$srcdir/$pkgname/$_destname2/"* "$pkgdir$_destname2"
+}
