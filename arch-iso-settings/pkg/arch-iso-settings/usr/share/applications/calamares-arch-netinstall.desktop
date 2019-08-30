@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Install Arch Netinstall
+Comment=Installer for ArchNetinstall
+Categories=Utility;
+Exec=pkexec calamares
+Icon=calamares

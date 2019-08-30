@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Install Arch-Netinstall with debugging mode on
+Comment=Installer for Arch-Netinstall to debug
+Categories=Utility;
+Exec=pkexec calamares -d
+Icon=calamares
